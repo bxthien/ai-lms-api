@@ -10,14 +10,28 @@ import { Observable, tap } from 'rxjs';
 export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const now = Date.now();
-    const request = context.switchToHttp().getRequest();
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest();
+    const response = httpContext.getResponse();
+
     const { method, url } = request;
 
     return next.handle().pipe(
       tap(() => {
         const elapsed = Date.now() - now;
+        const { statusCode } = response;
+
+        const logPayload = {
+          timestamp: new Date().toISOString(),
+          method,
+          url,
+          statusCode,
+          durationMs: elapsed,
+        };
+
+        // Structured JSON log so that Cloud Logging can parse fields
         // eslint-disable-next-line no-console
-        console.log(`${method} ${url} - ${elapsed}ms`);
+        console.log(JSON.stringify(logPayload));
       }),
     );
   }
