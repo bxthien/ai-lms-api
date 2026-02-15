@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckService,
@@ -6,6 +7,7 @@ import {
 } from '@nestjs/terminus';
 import { PrismaService } from '../prisma/prisma.service';
 
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
   constructor(
@@ -15,6 +17,7 @@ export class HealthController {
 
   @Get()
   @HealthCheck()
+  @ApiOperation({ summary: 'Kiểm tra DB và dịch vụ' })
   async check() {
     const dbCheck: HealthIndicatorResult = {
       database: {
@@ -27,4 +30,3 @@ export class HealthController {
     return this.health.check([async () => dbCheck]);
   }
 }
-
