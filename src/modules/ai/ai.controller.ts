@@ -12,14 +12,22 @@ export class AiController {
 
   @Post('generate-quiz')
   @ApiOperation({ summary: 'Sinh quiz từ nội dung bài học (async queue)' })
-  @ApiResponse({ status: 200, description: 'Job đã vào queue', type: QueuedResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Job đã vào queue',
+    type: QueuedResponseDto,
+  })
   async generateQuiz(@Body() dto: GenerateQuizDto) {
     return this.aiService.generateQuiz(dto);
   }
 
   @Post('grade-essay')
   @ApiOperation({ summary: 'Chấm bài luận bằng AI (async queue)' })
-  @ApiResponse({ status: 200, description: 'Job đã vào queue', type: QueuedResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Job đã vào queue',
+    type: QueuedResponseDto,
+  })
   async gradeEssay(@Body() dto: GradeEssayDto) {
     return this.aiService.gradeEssay(dto);
   }

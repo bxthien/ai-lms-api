@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,5 +27,13 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Sai email hoặc mật khẩu' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Lấy access token mới từ refresh token' })
+  @ApiResponse({ status: 200, description: 'Refresh thành công' })
+  @ApiResponse({ status: 401, description: 'Refresh token không hợp lệ' })
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshTokens(dto);
   }
 }

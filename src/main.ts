@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -14,6 +15,13 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('AI-LMS API')
@@ -42,7 +50,7 @@ async function bootstrap() {
     const path = await import('path');
     const outPath = path.join(process.cwd(), 'openapi.json');
     fs.writeFileSync(outPath, JSON.stringify(document, null, 2), 'utf-8');
-    // eslint-disable-next-line no-console
+
     console.log(`OpenAPI spec written to ${outPath}`);
   }
 

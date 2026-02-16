@@ -241,6 +241,34 @@
         ]
       }
     },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refresh thành công"
+          },
+          "401": {
+            "description": "Refresh token không hợp lệ"
+          }
+        },
+        "summary": "Lấy access token mới từ refresh token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/users/me": {
       "get": {
         "operationId": "UsersController_getProfile",
@@ -259,6 +287,37 @@
           }
         ],
         "summary": "Lấy profile user hiện tại",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật profile user hiện tại",
         "tags": [
           "users"
         ]
@@ -474,6 +533,32 @@
           "email",
           "password"
         ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token đã nhận khi đăng nhập/đăng ký"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn B"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://example.com/avatar.png",
+            "description": "URL ảnh đại diện"
+          }
+        }
       },
       "GenerateQuizDto": {
         "type": "object",
