@@ -332,7 +332,187 @@
             "description": ""
           }
         },
-        "summary": "Danh sách khóa học (browse, filter)",
+        "summary": "Danh sách khóa học đã publish (public)",
+        "tags": [
+          "courses"
+        ]
+      },
+      "post": {
+        "operationId": "CoursesController_createCourse",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher tạo khóa học mới (mặc định DRAFT)",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "operationId": "CoursesController_getCourse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "summary": "Chi tiết khóa học (kèm danh sách lesson)",
+        "tags": [
+          "courses"
+        ]
+      },
+      "patch": {
+        "operationId": "CoursesController_updateCourse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Course not found or not owned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher cập nhật khóa học của mình",
+        "tags": [
+          "courses"
+        ]
+      },
+      "delete": {
+        "operationId": "CoursesController_deleteCourse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher xóa mềm khóa học của mình",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/courses/{id}/publish": {
+      "patch": {
+        "operationId": "CoursesController_publishCourse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher publish khóa học của mình",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/courses/{id}/unpublish": {
+      "patch": {
+        "operationId": "CoursesController_unpublishCourse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher unpublish khóa học của mình",
         "tags": [
           "courses"
         ]
@@ -557,6 +737,72 @@
             "type": "string",
             "example": "https://example.com/avatar.png",
             "description": "URL ảnh đại diện"
+          }
+        }
+      },
+      "CreateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "NestJS for Beginners"
+          },
+          "description": {
+            "type": "string",
+            "example": "Học NestJS từ cơ bản đến nâng cao"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "BEGINNER"
+          },
+          "price": {
+            "type": "number",
+            "example": 49.99
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "example": "https://example.com/course-thumbnail.png"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "level",
+          "price"
+        ]
+      },
+      "UpdateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "NestJS for Beginners"
+          },
+          "description": {
+            "type": "string",
+            "example": "Học NestJS từ cơ bản đến nâng cao"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "BEGINNER"
+          },
+          "price": {
+            "type": "number",
+            "example": 49.99
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "example": "https://example.com/course-thumbnail.png"
           }
         }
       },
