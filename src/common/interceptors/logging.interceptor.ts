@@ -30,7 +30,7 @@ export class LoggingInterceptor implements NestInterceptor {
         };
 
         // Structured JSON log so that Cloud Logging can parse fields
-        // eslint-disable-next-line no-console
+
         console.log(JSON.stringify(logPayload));
       }),
     );
