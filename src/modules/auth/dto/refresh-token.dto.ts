@@ -9,4 +9,3 @@ export class RefreshTokenDto {
   @MinLength(10)
   refreshToken: string;
 }
-
