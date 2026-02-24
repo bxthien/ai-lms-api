@@ -2,6 +2,12 @@
 
 File này dùng để **note định hướng API**, module và roadmap, bạn sẽ triển khai chi tiết sau.
 
+**Swagger & OpenAPI**
+
+- **Swagger UI**: Khi chạy app, mở `GET /docs` (ví dụ `http://localhost:3000/docs`). Dùng Bearer token (access-token) để gọi API có bảo vệ.
+- **OpenAPI JSON**: `GET /docs-json` trả về spec dạng JSON.
+- **Sinh file `openapi.json`** (không cần chạy server): `pnpm openapi:generate`. File ghi ra `openapi.json` tại root project. Có thể set `BASE_URL` trong `.env` để spec dùng đúng server (production).
+
 ---
 
 ### 1. Phase 1 – MVP

@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,10 +21,7 @@ export class EnrollmentsController {
   @ApiOperation({ summary: 'Ghi danh vào khóa học (body: courseId)' })
   @ApiResponse({ status: 201, description: 'Ghi danh thành công' })
   @ApiResponse({ status: 404, description: 'Course not found' })
-  enroll(
-    @CurrentUser() user: { userId: string },
-    @Body() body: EnrollDto,
-  ) {
+  enroll(@CurrentUser() user: { userId: string }, @Body() body: EnrollDto) {
     return this.enrollmentsService.enroll(user.userId, body.courseId);
   }
 

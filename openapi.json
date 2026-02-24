@@ -366,6 +366,191 @@
         ]
       }
     },
+    "/courses/{id}/lessons": {
+      "get": {
+        "operationId": "CoursesController_listLessons",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "summary": "Danh sách lesson của khóa học",
+        "tags": [
+          "courses"
+        ]
+      },
+      "post": {
+        "operationId": "CoursesController_createLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "404": {
+            "description": "Course not found or not owned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher thêm lesson vào khóa học",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/courses/{id}/lessons/{lessonId}": {
+      "get": {
+        "operationId": "CoursesController_getLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Lesson not found"
+          }
+        },
+        "summary": "Chi tiết một lesson",
+        "tags": [
+          "courses"
+        ]
+      },
+      "patch": {
+        "operationId": "CoursesController_updateLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Lesson not found or not owned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher sửa lesson",
+        "tags": [
+          "courses"
+        ]
+      },
+      "delete": {
+        "operationId": "CoursesController_deleteLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher xóa mềm lesson",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
     "/courses/{id}": {
       "get": {
         "operationId": "CoursesController_getCourse",
@@ -522,27 +707,241 @@
       "post": {
         "operationId": "EnrollmentsController_enroll",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollDto"
+              }
+            }
           }
         },
+        "responses": {
+          "201": {
+            "description": "Ghi danh thành công"
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Ghi danh vào khóa học (body: courseId)",
         "tags": [
           "enrollments"
         ]
       }
     },
-    "/quizzes": {
+    "/enrollments/me": {
       "get": {
-        "operationId": "QuizzesController_listQuizzes",
+        "operationId": "EnrollmentsController_listMyEnrollments",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "summary": "Danh sách quiz (filter theo lesson/course)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách khóa học mà user đã ghi danh",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/enrollments/me/{courseId}": {
+      "get": {
+        "operationId": "EnrollmentsController_getMyEnrollment",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Enrollment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thông tin ghi danh của user cho một khóa học cụ thể",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/quizzes/lesson/{lessonId}": {
+      "get": {
+        "operationId": "QuizzesController_listQuizzesByLesson",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Danh sách quiz theo lesson",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/quizzes/{id}": {
+      "get": {
+        "operationId": "QuizzesController_getQuiz",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "Quiz not found"
+          }
+        },
+        "summary": "Chi tiết quiz (kèm danh sách câu hỏi)",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/quizzes": {
+      "post": {
+        "operationId": "QuizzesController_createQuiz",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuizDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher tạo quiz cho một lesson",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/quizzes/{quizId}/questions": {
+      "post": {
+        "operationId": "QuizzesController_addQuestion",
+        "parameters": [
+          {
+            "name": "quizId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Teacher thêm câu hỏi cho quiz",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/quizzes/{id}/submit": {
+      "post": {
+        "operationId": "QuizzesController_submitQuiz",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitQuizDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Học viên nộp bài quiz (auto grade MCQ, lưu toàn bộ câu trả lời dạng JSON)",
         "tags": [
           "quizzes"
         ]
@@ -615,7 +1014,7 @@
   },
   "info": {
     "title": "AI-LMS API",
-    "description": "AI Powered Learning Management System API",
+    "description": "API cho hệ thống AI-Powered Learning Management System: auth, users, courses, lessons, enrollments, quizzes, AI features.",
     "version": "1.0",
     "contact": {}
   },
@@ -630,7 +1029,7 @@
     },
     {
       "name": "courses",
-      "description": "Khóa học và bài học"
+      "description": "Khóa học, lesson: CRUD course + lesson"
     },
     {
       "name": "enrollments",
@@ -653,10 +1052,15 @@
       "description": "API root"
     }
   ],
-  "servers": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Current environment"
+    }
+  ],
   "components": {
     "securitySchemes": {
-      "bearer": {
+      "access-token": {
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "type": "http"
@@ -740,6 +1144,66 @@
           }
         }
       },
+      "CreateLessonDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Giới thiệu NestJS"
+          },
+          "videoUrl": {
+            "type": "string",
+            "example": "https://example.com/video.mp4"
+          },
+          "content": {
+            "type": "string",
+            "example": "Nội dung bài học..."
+          },
+          "orderIndex": {
+            "type": "number",
+            "example": 1,
+            "description": "Thứ tự bài học trong khóa"
+          },
+          "duration": {
+            "type": "number",
+            "example": 15,
+            "description": "Thời lượng (phút)"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "orderIndex",
+          "duration"
+        ]
+      },
+      "UpdateLessonDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Giới thiệu NestJS"
+          },
+          "videoUrl": {
+            "type": "string",
+            "example": "https://example.com/video.mp4"
+          },
+          "content": {
+            "type": "string",
+            "example": "Nội dung bài học..."
+          },
+          "orderIndex": {
+            "type": "number",
+            "example": 1,
+            "description": "Thứ tự bài học trong khóa"
+          },
+          "duration": {
+            "type": "number",
+            "example": 15,
+            "description": "Thời lượng (phút)"
+          }
+        }
+      },
       "CreateCourseDto": {
         "type": "object",
         "properties": {
@@ -805,6 +1269,108 @@
             "example": "https://example.com/course-thumbnail.png"
           }
         }
+      },
+      "EnrollDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "example": "uuid-course-id",
+            "description": "ID của khóa học cần ghi danh"
+          }
+        },
+        "required": [
+          "courseId"
+        ]
+      },
+      "CreateQuizDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Quiz chương 1"
+          },
+          "lessonId": {
+            "type": "string",
+            "example": "uuid-lesson-id",
+            "description": "ID của lesson mà quiz thuộc về"
+          }
+        },
+        "required": [
+          "title",
+          "lessonId"
+        ]
+      },
+      "CreateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MCQ",
+              "TEXT"
+            ],
+            "example": "MCQ"
+          },
+          "content": {
+            "type": "string",
+            "example": "NestJS dùng pattern nào cho kiến trúc?"
+          },
+          "correctAnswer": {
+            "type": "string",
+            "example": "MVC",
+            "description": "Đáp án đúng cho MCQ (để auto grading)"
+          },
+          "score": {
+            "type": "number",
+            "example": 1,
+            "description": "Điểm cho câu hỏi"
+          }
+        },
+        "required": [
+          "type",
+          "content",
+          "score"
+        ]
+      },
+      "SubmitAnswerDto": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "example": "uuid-question-id"
+          },
+          "answer": {
+            "type": "string",
+            "example": "MVC",
+            "description": "Câu trả lời của học viên"
+          }
+        },
+        "required": [
+          "questionId",
+          "answer"
+        ]
+      },
+      "SubmitQuizDto": {
+        "type": "object",
+        "properties": {
+          "quizId": {
+            "type": "string",
+            "example": "uuid-quiz-id",
+            "description": "ID của quiz cần nộp"
+          },
+          "answers": {
+            "description": "Danh sách câu trả lời cho từng câu hỏi",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmitAnswerDto"
+            }
+          }
+        },
+        "required": [
+          "quizId",
+          "answers"
+        ]
       },
       "GenerateQuizDto": {
         "type": "object",

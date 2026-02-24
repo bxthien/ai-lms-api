@@ -19,6 +19,8 @@ import { CurrentUser } from '../../common/decorators/user.decorator';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { CreateLessonDto } from './dto/create-lesson.dto';
+import { UpdateLessonDto } from './dto/update-lesson.dto';
 
 @ApiTags('courses')
 @Controller('courses')
@@ -30,6 +32,72 @@ export class CoursesController {
   @ApiResponse({ status: 200 })
   listCourses() {
     return this.coursesService.listPublished();
+  }
+
+  @Get(':id/lessons')
+  @ApiOperation({ summary: 'Danh sách lesson của khóa học' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 404, description: 'Course not found' })
+  listLessons(@Param('id') courseId: string) {
+    return this.coursesService.listLessons(courseId);
+  }
+
+  @Get(':id/lessons/:lessonId')
+  @ApiOperation({ summary: 'Chi tiết một lesson' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 404, description: 'Lesson not found' })
+  getLesson(
+    @Param('id') courseId: string,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return this.coursesService.getLesson(courseId, lessonId);
+  }
+
+  @Post(':id/lessons')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Teacher thêm lesson vào khóa học' })
+  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 404, description: 'Course not found or not owned' })
+  createLesson(
+    @Param('id') courseId: string,
+    @CurrentUser() user: { userId: string },
+    @Body() dto: CreateLessonDto,
+  ) {
+    return this.coursesService.createLesson(courseId, user.userId, dto);
+  }
+
+  @Patch(':id/lessons/:lessonId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Teacher sửa lesson' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 404, description: 'Lesson not found or not owned' })
+  updateLesson(
+    @Param('id') courseId: string,
+    @Param('lessonId') lessonId: string,
+    @CurrentUser() user: { userId: string },
+    @Body() dto: UpdateLessonDto,
+  ) {
+    return this.coursesService.updateLesson(
+      courseId,
+      lessonId,
+      user.userId,
+      dto,
+    );
+  }
+
+  @Delete(':id/lessons/:lessonId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Teacher xóa mềm lesson' })
+  @ApiResponse({ status: 204 })
+  async deleteLesson(
+    @Param('id') courseId: string,
+    @Param('lessonId') lessonId: string,
+    @CurrentUser() user: { userId: string },
+  ) {
+    await this.coursesService.softDeleteLesson(courseId, lessonId, user.userId);
   }
 
   @Get(':id')

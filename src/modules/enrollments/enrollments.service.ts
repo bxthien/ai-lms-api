@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CourseStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class EnrollmentsService {
       where: {
         id: courseId,
         deletedAt: null,
+        status: CourseStatus.PUBLISHED,
       },
     });
     if (!course) {
