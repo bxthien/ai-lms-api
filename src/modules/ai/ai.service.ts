@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { AiQueueService } from '../../queue/queue.service';
 
 @Injectable()
 export class AiService {
-  constructor(private readonly aiQueue: AiQueueService) {}
+  // Tạm thời disable queue/Redis – chỉ trả về stub.
 
-  async generateQuiz(jobPayload: unknown) {
-    await this.aiQueue.enqueueGenerateQuiz(jobPayload);
-    return { status: 'queued' };
+  async generateQuiz(_jobPayload: unknown) {
+    return { status: 'disabled' };
   }
 
-  async gradeEssay(jobPayload: unknown) {
-    await this.aiQueue.enqueueGradeEssay(jobPayload);
-    return { status: 'queued' };
+  async gradeEssay(_jobPayload: unknown) {
+    return { status: 'disabled' };
   }
 }
