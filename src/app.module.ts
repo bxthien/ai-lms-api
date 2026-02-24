@@ -11,7 +11,6 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { AiModule } from './modules/ai/ai.module';
-import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -54,7 +53,6 @@ import { QueueModule } from './queue/queue.module';
     EnrollmentsModule,
     QuizzesModule,
     AiModule,
-    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],
