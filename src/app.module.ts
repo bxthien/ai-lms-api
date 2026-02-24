@@ -20,19 +20,30 @@ import { QueueModule } from './queue/queue.module';
       envFilePath: '.env',
       validationSchema: Joi.object({
         PORT: Joi.number().default(3000),
+
+        // Database (Cloud SQL / local Postgres)
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_DB: Joi.string().required(),
         POSTGRES_HOST: Joi.string().default('localhost'),
         POSTGRES_PORT: Joi.number().default(5432),
         DATABASE_URL: Joi.string().uri().required(),
+
+        // Auth / Security
         JWT_ACCESS_SECRET: Joi.string().required(),
         JWT_REFRESH_SECRET: Joi.string().required(),
         JWT_ACCESS_EXPIRES_IN: Joi.number().default(900),
         JWT_REFRESH_EXPIRES_IN: Joi.number().default(604800),
+
+        // Redis / Queue (local Redis or Memorystore on GCP)
         REDIS_HOST: Joi.string().default('localhost'),
         REDIS_PORT: Joi.number().default(6379),
         REDIS_PASSWORD: Joi.string().allow('').optional(),
+
+        // Optional GCP / Vertex AI configuration
+        GCP_PROJECT_ID: Joi.string().optional(),
+        GCP_LOCATION: Joi.string().optional(),
+        VERTEX_AI_MODEL: Joi.string().optional(),
       }),
     }),
     PrismaModule,

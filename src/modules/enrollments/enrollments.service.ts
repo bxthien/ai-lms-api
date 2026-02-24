@@ -1,8 +1,86 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CourseStatus } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class EnrollmentsService {
-  placeholder() {
-    return { message: 'enrollments placeholder' };
+  constructor(private readonly prisma: PrismaService) {}
+
+  async enroll(userId: string, courseId: string) {
+    const course = await this.prisma.course.findFirst({
+      where: {
+        id: courseId,
+        deletedAt: null,
+        status: CourseStatus.PUBLISHED,
+      },
+    });
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    const enrollment = await this.prisma.enrollment.upsert({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      update: {
+        status: 'ACTIVE',
+      },
+      create: {
+        userId,
+        courseId,
+        progress: 0,
+        status: 'ACTIVE',
+      },
+    });
+
+    return enrollment;
+  }
+
+  async listMyEnrollments(userId: string) {
+    return this.prisma.enrollment.findMany({
+      where: { userId },
+      orderBy: { enrolledAt: 'desc' },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            level: true,
+            price: true,
+            thumbnailUrl: true,
+            status: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getMyEnrollmentForCourse(userId: string, courseId: string) {
+    const enrollment = await this.prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+
+    return enrollment;
   }
 }

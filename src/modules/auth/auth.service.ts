@@ -8,7 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import * as bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '@prisma/client';
 
 @Injectable()
@@ -68,6 +69,54 @@ export class AuthService {
     return {
       user: this.sanitizeUser(user),
       ...tokens,
+    };
+  }
+
+  async refreshTokens(dto: RefreshTokenDto) {
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+
+    let payload: { sub: string; email: string; role: UserRole };
+    try {
+      payload = await this.jwtService.verifyAsync(dto.refreshToken, {
+        secret: refreshSecret,
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const now = new Date();
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: {
+        userId: user.id,
+        isRevoked: false,
+        expiredAt: { gt: now },
+      },
+    });
+
+    const match = await Promise.any(
+      tokens.map(async (token) => {
+        const ok = await bcrypt.compare(dto.refreshToken, token.token);
+        return ok ? token : null;
+      }),
+    ).catch(() => null);
+
+    if (!match) {
+      throw new UnauthorizedException('Refresh token not recognized');
+    }
+
+    const newTokens = await this.generateTokens(user.id, user.email, user.role);
+    await this.storeRefreshToken(user.id, newTokens.refreshToken);
+
+    return {
+      user: this.sanitizeUser(user),
+      ...newTokens,
     };
   }
 
