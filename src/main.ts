@@ -54,14 +54,6 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  if (process.env.WRITE_OPENAPI_SPEC === 'true') {
-    const fs = await import('fs');
-    const path = await import('path');
-    const outPath = path.join(process.cwd(), 'openapi.json');
-    fs.writeFileSync(outPath, JSON.stringify(document, null, 2), 'utf-8');
-    console.log(`OpenAPI spec written to ${outPath}`);
-  }
-
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
 
