@@ -34,11 +34,6 @@ import { AiModule } from './modules/ai/ai.module';
         JWT_ACCESS_EXPIRES_IN: Joi.number().default(900),
         JWT_REFRESH_EXPIRES_IN: Joi.number().default(604800),
 
-        // Redis / Queue (local Redis or Memorystore on GCP)
-        REDIS_HOST: Joi.string().default('localhost'),
-        REDIS_PORT: Joi.number().default(6379),
-        REDIS_PASSWORD: Joi.string().allow('').optional(),
-
         // Optional GCP / Vertex AI configuration
         GCP_PROJECT_ID: Joi.string().optional(),
         GCP_LOCATION: Joi.string().optional(),
