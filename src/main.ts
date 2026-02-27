@@ -33,10 +33,11 @@ async function bootstrap() {
     )
     .setVersion('1.0')
     .addServer(baseUrl, 'Current environment')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'access-token',
-    )
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
     .addTag('auth', 'Đăng ký, đăng nhập, refresh token')
     .addTag('users', 'Quản lý user và profile')
     .addTag('courses', 'Khóa học, lesson: CRUD course + lesson')

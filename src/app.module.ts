@@ -21,11 +21,11 @@ import { AiModule } from './modules/ai/ai.module';
         PORT: Joi.number().default(3000),
 
         // Database (Cloud SQL / local Postgres)
-        POSTGRES_USER: Joi.string().required(),
-        POSTGRES_PASSWORD: Joi.string().required(),
-        POSTGRES_DB: Joi.string().required(),
-        POSTGRES_HOST: Joi.string().default('localhost'),
-        POSTGRES_PORT: Joi.number().default(5432),
+        // POSTGRES_USER: Joi.string().required(),
+        // POSTGRES_PASSWORD: Joi.string().required(),
+        // POSTGRES_DB: Joi.string().required(),
+        // POSTGRES_HOST: Joi.string().default('localhost'),
+        // POSTGRES_PORT: Joi.number().default(5432),
         DATABASE_URL: Joi.string().uri().required(),
 
         // Auth / Security
