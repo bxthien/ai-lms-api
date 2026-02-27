@@ -13,6 +13,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(
