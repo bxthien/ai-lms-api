@@ -29,8 +29,6 @@ export class LoggingInterceptor implements NestInterceptor {
           durationMs: elapsed,
         };
 
-        // Structured JSON log so that Cloud Logging can parse fields
-
         console.log(JSON.stringify(logPayload));
       }),
     );

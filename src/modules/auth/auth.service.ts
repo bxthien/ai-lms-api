@@ -5,55 +5,49 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
+import { UserRole, UserStatus } from '@prisma/client';
+import { AuthRepository } from './repositories/auth.repository';
+import { UsersRepository } from '../users/repositories/users.repository';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import * as bcrypt from 'bcryptjs';
-import { UserRole, UserStatus } from '@prisma/client';
+import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly authRepository: AuthRepository,
+    private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const existing = await this.usersRepository.findByEmail(dto.email);
     if (existing) {
       throw new ConflictException('Email already in use');
     }
 
     const hashed = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashed,
-        fullName: dto.fullName,
-        role: dto.role ?? UserRole.STUDENT,
-        status: UserStatus.ACTIVE,
-        isVerified: false,
-      },
+    const user = await this.usersRepository.create({
+      email: dto.email,
+      password: hashed,
+      fullName: dto.fullName,
+      role: dto.role ?? UserRole.STUDENT,
+      status: UserStatus.ACTIVE,
+      isVerified: false,
     });
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
-    return {
-      user: this.sanitizeUser(user),
-      ...tokens,
-    };
+    const { password: _, ...safeUser } = user;
+    return { user: safeUser, ...tokens };
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.usersRepository.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -66,16 +60,15 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
-    return {
-      user: this.sanitizeUser(user),
-      ...tokens,
-    };
+    const { password: _, ...safeUser } = user;
+    return { user: safeUser, ...tokens };
   }
 
   async refreshTokens(dto: RefreshTokenDto) {
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    const refreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET');
 
-    let payload: { sub: string; email: string; role: UserRole };
+    let payload: JwtPayload;
     try {
       payload = await this.jwtService.verifyAsync(dto.refreshToken, {
         secret: refreshSecret,
@@ -84,26 +77,18 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-    });
+    const user = await this.usersRepository.findByIdWithPassword(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const now = new Date();
-    const tokens = await this.prisma.refreshToken.findMany({
-      where: {
-        userId: user.id,
-        isRevoked: false,
-        expiredAt: { gt: now },
-      },
-    });
+    const activeTokens =
+      await this.authRepository.findActiveRefreshTokensByUser(user.id);
 
     const match = await Promise.any(
-      tokens.map(async (token) => {
+      activeTokens.map(async (token) => {
         const ok = await bcrypt.compare(dto.refreshToken, token.token);
-        return ok ? token : null;
+        return ok ? token : Promise.reject(null);
       }),
     ).catch(() => null);
 
@@ -111,13 +96,15 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token not recognized');
     }
 
-    const newTokens = await this.generateTokens(user.id, user.email, user.role);
+    const newTokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
     await this.storeRefreshToken(user.id, newTokens.refreshToken);
 
-    return {
-      user: this.sanitizeUser(user),
-      ...newTokens,
-    };
+    const { password: _, ...safeUser } = user;
+    return { user: safeUser, ...newTokens };
   }
 
   private async generateTokens(
@@ -136,7 +123,7 @@ export class AuthService {
       604800,
     );
 
-    const payload = { sub: userId, email, role };
+    const payload: JwtPayload = { sub: userId, email, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
@@ -152,24 +139,20 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private async storeRefreshToken(userId: string, refreshToken: string) {
+  private async storeRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
     const hash = await bcrypt.hash(refreshToken, 10);
-    const expiresAt = new Date(
+    const expiredAt = new Date(
       Date.now() +
-        this.configService.get<number>('JWT_REFRESH_EXPIRES_IN', 604800) * 1000,
+        this.configService.get<number>('JWT_REFRESH_EXPIRES_IN', 604800) *
+          1000,
     );
-
-    await this.prisma.refreshToken.create({
-      data: {
-        token: hash,
-        userId,
-        expiredAt: expiresAt,
-      },
+    await this.authRepository.createRefreshToken({
+      token: hash,
+      userId,
+      expiredAt,
     });
-  }
-
-  private sanitizeUser(user: any) {
-    const { password, ...rest } = user;
-    return rest;
   }
 }

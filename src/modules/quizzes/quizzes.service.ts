@@ -1,5 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { QuizzesRepository } from './repositories/quizzes.repository';
+import { QuestionsRepository } from './repositories/questions.repository';
+import { SubmissionsRepository } from './repositories/submissions.repository';
+import { LessonsRepository } from '../courses/repositories/lessons.repository';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
@@ -7,54 +10,46 @@ import { QuestionType } from '@prisma/client';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly quizzesRepository: QuizzesRepository,
+    private readonly questionsRepository: QuestionsRepository,
+    private readonly submissionsRepository: SubmissionsRepository,
+    private readonly lessonsRepository: LessonsRepository,
+  ) {}
 
   async listByLesson(lessonId: string) {
-    return this.prisma.quiz.findMany({
-      where: { lessonId },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        title: true,
-        lessonId: true,
-        createdAt: true,
-      },
-    });
+    return this.quizzesRepository.findByLesson(lessonId);
   }
 
   async getQuizWithQuestions(quizId: string) {
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id: quizId },
-      include: {
-        questions: true,
-      },
-    });
-
+    const quiz = await this.quizzesRepository.findByIdWithQuestions(quizId);
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
-
     return quiz;
   }
 
   async createQuizForLesson(teacherId: string, dto: CreateQuizDto) {
-    const lesson = await this.prisma.lesson.findFirst({
-      where: {
-        id: dto.lessonId,
-        course: {
-          teacherId,
-        },
-      },
-    });
+    // Verify lesson exists and belongs to the teacher's course
+    const lesson = await this.lessonsRepository.findById(dto.lessonId);
     if (!lesson) {
       throw new NotFoundException('Lesson not found or not owned by teacher');
     }
 
-    return this.prisma.quiz.create({
-      data: {
-        title: dto.title,
-        lessonId: dto.lessonId,
-      },
+    // Direct ownership check: find lesson owned by teacher
+    const lessonOwnedByTeacher =
+      await this.lessonsRepository.findByIdCourseAndTeacher(
+        dto.lessonId,
+        lesson.courseId,
+        teacherId,
+      );
+    if (!lessonOwnedByTeacher) {
+      throw new NotFoundException('Lesson not found or not owned by teacher');
+    }
+
+    return this.quizzesRepository.create({
+      title: dto.title,
+      lessonId: dto.lessonId,
     });
   }
 
@@ -63,50 +58,34 @@ export class QuizzesService {
     quizId: string,
     dto: CreateQuestionDto,
   ) {
-    const quiz = await this.prisma.quiz.findFirst({
-      where: {
-        id: quizId,
-        lesson: {
-          course: {
-            teacherId,
-          },
-        },
-      },
-    });
+    const quiz = await this.quizzesRepository.findByIdWithTeacher(
+      quizId,
+      teacherId,
+    );
     if (!quiz) {
       throw new NotFoundException('Quiz not found or not owned by teacher');
     }
 
-    return this.prisma.question.create({
-      data: {
-        quizId,
-        type: dto.type,
-        content: dto.content,
-        correctAnswer: dto.correctAnswer,
-        score: dto.score,
-      },
+    return this.questionsRepository.create({
+      quizId,
+      type: dto.type,
+      content: dto.content,
+      correctAnswer: dto.correctAnswer,
+      score: dto.score,
     });
   }
 
   async submitQuiz(userId: string, dto: SubmitQuizDto) {
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id: dto.quizId },
-      include: { questions: true },
-    });
+    const quiz = await this.quizzesRepository.findByIdWithQuestions(dto.quizId);
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
 
-    const existing = await this.prisma.submission.findUnique({
-      where: {
-        userId_quizId: {
-          userId,
-          quizId: dto.quizId,
-        },
-      },
-    });
+    const existing = await this.submissionsRepository.findByUserAndQuiz(
+      userId,
+      dto.quizId,
+    );
     if (existing) {
-      // Tùy chiến lược, có thể cho phép làm lại; hiện tại tạm thời không
       throw new NotFoundException('Submission already exists');
     }
 
@@ -133,15 +112,11 @@ export class QuizzesService {
     const normalizedScore =
       maxScore > 0 ? parseFloat((totalScore / maxScore).toFixed(2)) : null;
 
-    const submission = await this.prisma.submission.create({
-      data: {
-        userId,
-        quizId: dto.quizId,
-        answer: JSON.stringify(dto.answers),
-        score: normalizedScore,
-      },
+    return this.submissionsRepository.create({
+      userId,
+      quizId: dto.quizId,
+      answer: JSON.stringify(dto.answers),
+      score: normalizedScore,
     });
-
-    return submission;
   }
 }
